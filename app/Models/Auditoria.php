@@ -25,8 +25,8 @@ class Auditoria extends Model
         'valores_nuevos' => 'array',
     ];
 
-    public function user()
+    public function empleado()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Empleado::class, 'user_id');
     }
 }

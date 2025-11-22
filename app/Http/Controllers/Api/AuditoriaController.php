@@ -10,7 +10,7 @@ class AuditoriaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Auditoria::with('user');
+        $query = Auditoria::with('empleado');
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
@@ -24,6 +24,7 @@ class AuditoriaController extends Controller
             $query->where('modelo', 'like', '%' . $request->modelo . '%');
         }
 
+        // Fecha de inicio (>=) y fin (<=) usando whereDate
         if ($request->filled('fecha_inicio')) {
             $query->whereDate('created_at', '>=', $request->fecha_inicio);
         }
@@ -36,7 +37,7 @@ class AuditoriaController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $auditorias
+            'data' => $auditorias,
         ]);
     }
 }
