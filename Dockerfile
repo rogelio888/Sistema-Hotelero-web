@@ -28,6 +28,10 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
+# Copy and set permissions for entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
@@ -41,3 +45,6 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
 # Expose port 80
 EXPOSE 80
+
+# Use entrypoint script
+CMD ["docker-entrypoint.sh"]
