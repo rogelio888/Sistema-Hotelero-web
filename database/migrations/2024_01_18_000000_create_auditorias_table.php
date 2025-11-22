@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('auditorias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('empleados')->nullOnDelete();
             $table->string('accion'); // CREATE, UPDATE, DELETE
             $table->string('modelo'); // App\Models\Reserva
             $table->unsignedBigInteger('modelo_id');
