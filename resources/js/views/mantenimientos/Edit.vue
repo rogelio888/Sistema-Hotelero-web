@@ -41,7 +41,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import axios from 'axios';
+import axios from '../../axios';
 
 const router = useRouter();
 const route = useRoute();
@@ -61,7 +61,7 @@ const puedeGuardar = computed(() => {
 
 const cargarHabitaciones = async () => {
   try {
-    const response = await axios.get('/api/habitaciones');
+    const response = await axios.get('/habitaciones');
     habitaciones.value = response.data.data;
   } catch (e) {
     console.error('Error al cargar habitaciones', e);

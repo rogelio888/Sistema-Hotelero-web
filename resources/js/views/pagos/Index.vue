@@ -203,7 +203,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import axios from '../../axios';
 import Table from '../../components/Table.vue';
 
 const router = useRouter();
@@ -260,7 +260,7 @@ const cargarPagos = async (page = 1) => {
     if (filtros.value.fecha_inicio) params.fecha_inicio = filtros.value.fecha_inicio;
     if (filtros.value.fecha_fin) params.fecha_fin = filtros.value.fecha_fin;
 
-    const response = await axios.get('/api/pagos', { params });
+    const response = await axios.get('/pagos', { params });
     
     // Verificar estructura de respuesta
     if (!response.data || !response.data.data) {
@@ -357,7 +357,7 @@ const anularPago = async () => {
   }
 
   try {
-    await axios.post(`/api/pagos/${modalAnular.value.pago.id}/anular`, {
+    await axios.post(`/pagos/${modalAnular.value.pago.id}/anular`, {
       motivo_anulacion: modalAnular.value.motivo
     });
     

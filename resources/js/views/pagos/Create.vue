@@ -140,7 +140,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import axios from '../../axios';
 
 const router = useRouter();
 
@@ -182,7 +182,7 @@ const puedeGuardar = computed(() => {
 
 const cargarReservas = async () => {
   try {
-    const response = await axios.get('/api/reservas', {
+    const response = await axios.get('/reservas', {
       params: { estado: 'CONFIRMADA,EN_PROCESO' }
     });
     
@@ -222,7 +222,7 @@ const guardarPago = async () => {
   }
 
   try {
-    await axios.post('/api/pagos', form.value);
+    await axios.post('/pagos', form.value);
     alert('Pago registrado exitosamente');
     router.push('/pagos');
   } catch (error) {

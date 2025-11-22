@@ -57,7 +57,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import axios from '../../axios';
 import Table from '../../components/Table.vue';
 
 const router = useRouter();
@@ -84,7 +84,7 @@ const columnas = [
 
 const cargarHabitaciones = async () => {
   try {
-    const response = await axios.get('/api/habitaciones');
+    const response = await axios.get('/habitaciones');
     habitaciones.value = response.data.data;
   } catch (e) {
     console.error('Error al cargar habitaciones', e);
@@ -99,7 +99,7 @@ const cargarMantenimientos = async () => {
     if (filtros.value.id_habitacion) params.id_habitacion = filtros.value.id_habitacion;
     if (filtros.value.fecha_inicio) params.fecha_inicio = filtros.value.fecha_inicio;
     if (filtros.value.fecha_fin) params.fecha_fin = filtros.value.fecha_fin;
-    const response = await axios.get('/api/mantenimientos', { params });
+    const response = await axios.get('/mantenimientos', { params });
     mantenimientos.value = response.data.data;
   } catch (e) {
     console.error('Error al cargar mantenimientos', e);
