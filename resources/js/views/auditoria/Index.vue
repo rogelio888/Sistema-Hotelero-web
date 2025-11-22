@@ -216,7 +216,7 @@ const cargarAuditorias = async (page = 1) => {
   loading.value = true;
   try {
     const params = { page, ...filtros.value };
-    const response = await axios.get('/api/auditoria', { params });
+    const response = await axios.get('/auditoria', { params });
     auditorias.value = response.data.data.data;
     pagination.value = {
       current_page: response.data.data.current_page,
@@ -234,7 +234,7 @@ const cargarAuditorias = async (page = 1) => {
 
 const cargarUsuarios = async () => {
   try {
-    const response = await axios.get('/api/users'); // Asumiendo que existe este endpoint, si no, habrá que crearlo o ignorarlo
+    const response = await axios.get('/empleados'); // Endpoint para obtener empleados
     users.value = response.data;
   } catch (e) {
     // Silently fail if endpoint doesn't exist
