@@ -183,7 +183,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import axios from '../../axios';
 import Table from '../../components/Table.vue';
 
 const loading = ref(false);
