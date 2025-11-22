@@ -24,8 +24,9 @@ trait Auditable
 
     protected static function audit($accion, $model)
     {
-        $userId = Auth::id();
-        // Si no hay usuario autenticado (ej. seeders o jobs), se puede dejar null o usar un id de sistema
+        // Obtener el usuario autenticado (compatible con Sanctum)
+        $user = request()->user();
+        $userId = $user ? $user->id : null;
 
         $valoresAntiguos = null;
         $valoresNuevos = null;
