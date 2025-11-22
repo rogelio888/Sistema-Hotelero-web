@@ -13,10 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
-            '*', // Disable CSRF for API routes if needed, or configure properly
+            'api/*',
         ]);
 
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+        // Enable CORS for API routes
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
