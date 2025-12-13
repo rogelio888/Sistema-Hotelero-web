@@ -35,9 +35,17 @@ use App\Http\Controllers\Api\AuditoriaController;
 
 // Ruta de prueba
 Route::get('/test', function () {
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbStatus = 'Conexión a base de datos exitosa';
+    } catch (\Exception $e) {
+        $dbStatus = 'Error de conexión a base de datos: ' . $e->getMessage();
+    }
+
     return response()->json([
         'success' => true,
         'message' => 'API Sistema Hotelero funcionando correctamente',
+        'db_status' => $dbStatus,
         'version' => '1.0.0',
         'timestamp' => now()
     ]);
@@ -163,6 +171,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // AUDITORÍA (LOGS)
     // =================================================
     Route::apiResource('logs', LogHistorialController::class)->only(['index', 'show']);
-    Route::get('/auditoria', [AuditoriaController::class, 'index']);
+    Route::middleware('permission:ver_auditoria')->group(function () {
+        Route::get('/auditoria', [AuditoriaController::class, 'index']);
+    });
+
+    // =================================================
+    // SOLICITUDES DE AUTORIZACIÓN
+    // =================================================
+    Route::get('solicitudes-autorizacion', [\App\Http\Controllers\Api\SolicitudAutorizacionController::class, 'index']);
+    Route::post('solicitudes-autorizacion', [\App\Http\Controllers\Api\SolicitudAutorizacionController::class, 'store']);
+
+    Route::middleware('permission:gestionar_huespedes')->group(function () {
+        Route::post('solicitudes-autorizacion/{id}/aprobar', [\App\Http\Controllers\Api\SolicitudAutorizacionController::class, 'aprobar']);
+        Route::post('solicitudes-autorizacion/{id}/rechazar', [\App\Http\Controllers\Api\SolicitudAutorizacionController::class, 'rechazar']);
+    });
 
 });

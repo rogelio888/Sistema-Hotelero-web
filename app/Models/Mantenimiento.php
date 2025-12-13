@@ -5,13 +5,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Mantenimiento extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'mantenimientos';
-    
+
     public $timestamps = false;
 
     protected $fillable = [

@@ -35,6 +35,16 @@ class AuditoriaController extends Controller
 
         $auditorias = $query->orderBy('created_at', 'desc')->paginate(20);
 
+        // Transformar datos para que coincidan con lo que espera el frontend
+        $auditorias->getCollection()->transform(function ($auditoria) {
+            $auditoria->user = $auditoria->empleado ? [
+                'id' => $auditoria->empleado->id,
+                'name' => $auditoria->empleado->getNombreCompleto(),
+                'usuario' => $auditoria->empleado->usuario
+            ] : null;
+            return $auditoria;
+        });
+
         return response()->json([
             'success' => true,
             'data' => $auditorias,

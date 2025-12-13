@@ -76,7 +76,7 @@
         <template #cell-reserva="{ item }">
           <div>
             <p class="font-medium text-gray-900">{{ item.reserva?.huesped?.nombre || 'N/A' }}</p>
-            <p class="text-sm text-gray-500">Hab. {{ item.reserva?.habitacion?.[0]?.numero || 'N/A' }}</p>
+            <p class="text-sm text-gray-500">Hab. {{ item.reserva?.habitaciones?.[0]?.numero || 'N/A' }}</p>
           </div>
         </template>
 

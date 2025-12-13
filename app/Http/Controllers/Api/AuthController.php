@@ -16,47 +16,55 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'usuario' => 'required|string',
-            'password' => 'required|string',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'usuario' => 'required|string',
+                'password' => 'required|string',
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Buscar empleado
+            $empleado = Empleado::where('usuario', $request->usuario)->first();
+
+            if (!$empleado || !Hash::check($request->password, $empleado->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Credenciales incorrectas'
+                ], 401);
+            }
+
+            // Verificar que esté activo
+            if ($empleado->estado !== 'ACTIVO') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuario inactivo. Contacte al administrador.'
+                ], 403);
+            }
+
+            // Crear token
+            $token = $empleado->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login exitoso',
+                'data' => [
+                    'empleado' => $empleado->load(['rol.permisos', 'hotel']),
+                    'token' => $token,
+                ]
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+                'message' => 'Error en el servidor: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
-
-        // Buscar empleado
-        $empleado = Empleado::where('usuario', $request->usuario)->first();
-
-        if (!$empleado || !Hash::check($request->password, $empleado->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Credenciales incorrectas'
-            ], 401);
-        }
-
-        // Verificar que esté activo
-        if ($empleado->estado !== 'ACTIVO') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Usuario inactivo. Contacte al administrador.'
-            ], 403);
-        }
-
-        // Crear token
-        $token = $empleado->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Login exitoso',
-            'data' => [
-                'empleado' => $empleado->load(['rol.permisos', 'hotel']),
-                'token' => $token,
-            ]
-        ]);
     }
 
     /**

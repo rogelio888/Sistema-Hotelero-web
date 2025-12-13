@@ -1,0 +1,25 @@
+
+   INFO  Running migrations.
+
+  2025_11_22_010026_add_estado_to_pagos_table  5.79ms FAIL
+
+   Illuminate\Database\QueryException
+
+  SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'estado' (Connection: mysql, SQL: alter table `pagos` add `estado` enum('ACTIVO', 'ANULADO') not null default 'ACTIVO' after `fecha`)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:824
+    820▕                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    821▕                 );
+    822▕             }
+    823▕
+  ➜ 824▕             throw new QueryException(
+    825▕                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826▕             );
+    827▕         }
+    828▕     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:570
+      PDOException::("SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'estado'")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:570
+      PDOStatement::execute()

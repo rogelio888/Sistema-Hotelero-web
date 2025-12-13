@@ -5,21 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('pagos', function (Blueprint $table) {
             $table->enum('estado', ['ACTIVO', 'ANULADO'])->default('ACTIVO')->after('fecha');
             $table->text('motivo_anulacion')->nullable()->after('estado');
-            $table->timestamp('fecha_anulacion')->nullable()->after('motivo_anulacion');
+            $table->dateTime('fecha_anulacion')->nullable()->after('motivo_anulacion');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('pagos', function (Blueprint $table) {

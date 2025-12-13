@@ -106,6 +106,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 import { useReservasStore } from '../../stores/reservas';
 import { useHabitacionesStore } from '../../stores/habitaciones';
+import axios from '../../axios';
 
 const emit = defineEmits(['toggleSidebar']);
 const router = useRouter();
@@ -118,6 +119,7 @@ const userMenuOpen = ref(false);
 const notificationsOpen = ref(false);
 const userMenuRef = ref(null);
 const notificationsRef = ref(null);
+const solicitudesPendientes = ref(0);
 
 const user = computed(() => authStore.currentUser);
 
@@ -131,6 +133,17 @@ const userInitials = computed(() => {
 // Notificaciones
 const notifications = computed(() => {
   const list = [];
+
+  // Solicitudes de Autorización (Solo Gerente/Admin)
+  if (solicitudesPendientes.value > 0 && (authStore.isAdmin() || authStore.user?.rol?.nombre === 'Gerente')) {
+    list.push({
+      type: 'solicitud',
+      icon: '🔐',
+      title: 'Solicitudes Pendientes',
+      description: `Hay ${solicitudesPendientes.value} solicitud(es) de autorización`,
+      route: '/solicitudes'
+    });
+  }
 
   // Reservas Pendientes
   const pendientes = reservasStore.reservasPendientes.length;
@@ -194,6 +207,19 @@ const handleClickOutside = (event) => {
   }
 };
 
+const fetchSolicitudesPendientes = async () => {
+  if (authStore.isAdmin() || authStore.user?.rol?.nombre === 'Gerente') {
+    try {
+      const response = await axios.get('/solicitudes-autorizacion');
+      // Filtramos solo las pendientes
+      const pendientes = response.data.data.filter(s => s.estado === 'PENDIENTE');
+      solicitudesPendientes.value = pendientes.length;
+    } catch (error) {
+      console.error('Error cargando solicitudes:', error);
+    }
+  }
+};
+
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
   
@@ -202,8 +228,12 @@ onMounted(async () => {
     try {
       await Promise.all([
         reservasStore.fetchReservas(),
-        habitacionesStore.fetchHabitaciones()
+        habitacionesStore.fetchHabitaciones(),
+        fetchSolicitudesPendientes()
       ]);
+      
+      // Actualizar solicitudes cada 30 segundos
+      setInterval(fetchSolicitudesPendientes, 30000);
     } catch (error) {
       console.error('Error cargando notificaciones:', error);
     }

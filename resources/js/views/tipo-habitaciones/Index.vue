@@ -4,6 +4,7 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Tipos de Habitaciones</h1>
       <router-link
+        v-if="authStore.hasPermission('crear_tipos_habitaciones')"
         to="/tipo-habitaciones/crear"
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
       >
@@ -42,6 +43,7 @@
         <template #actions="{ item }">
           <div class="flex items-center justify-end space-x-2" v-if="item">
             <button 
+              v-if="authStore.hasPermission('editar_tipos_habitaciones')"
               @click.stop="editarTipo(item)" 
               class="text-yellow-500 hover:text-yellow-600 p-1" 
               title="Editar"
@@ -49,6 +51,7 @@
               ✏️
             </button>
             <button 
+              v-if="authStore.hasPermission('eliminar_tipos_habitaciones')"
               @click.stop="eliminarTipo(item)" 
               class="text-red-500 hover:text-red-600 p-1" 
               title="Eliminar"
@@ -65,10 +68,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../stores/auth';
 import axios from '../../axios';
 import Table from '../../components/Table.vue';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const tipos = ref([]);
 const loading = ref(false);
 const filtros = ref({

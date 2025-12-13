@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Huesped;
+use App\Models\SolicitudAutorizacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class HuespedController extends Controller
 {
@@ -23,6 +25,36 @@ class HuespedController extends Controller
         }
 
         $huespedes = $query->get();
+
+        // Agregar flag can_edit
+        $user = Auth::user();
+        $huespedes->transform(function ($huesped) use ($user) {
+            $huesped->can_edit = false;
+
+            if (!$user)
+                return $huesped;
+
+            // Si tiene permiso directo
+            if ($user->tienePermiso('gestionar_huespedes')) {
+                $huesped->can_edit = true;
+                return $huesped;
+            }
+
+            // Si tiene solicitud aprobada y NO usada
+            $solicitud = SolicitudAutorizacion::where('solicitante_id', $user->id)
+                ->where('modelo', Huesped::class)
+                ->where('modelo_id', $huesped->id)
+                ->where('estado', 'APROBADA')
+                ->whereNull('used_at')
+                ->where('created_at', '>=', now()->subHours(24)) // Validez de 24h
+                ->exists();
+
+            if ($solicitud) {
+                $huesped->can_edit = true;
+            }
+
+            return $huesped;
+        });
 
         return response()->json([
             'success' => true,
@@ -78,12 +110,40 @@ class HuespedController extends Controller
     public function update(Request $request, $id)
     {
         $huesped = Huesped::find($id);
+        $user = Auth::user();
 
         if (!$huesped) {
             return response()->json([
                 'success' => false,
                 'message' => 'Huésped no encontrado'
             ], 404);
+        }
+
+        // Verificar autorización
+        $autorizado = false;
+        $solicitud = null;
+
+        if ($user->tienePermiso('gestionar_huespedes')) {
+            $autorizado = true;
+        } else {
+            // Buscar solicitud aprobada y no usada
+            $solicitud = SolicitudAutorizacion::where('solicitante_id', $user->id)
+                ->where('modelo', Huesped::class)
+                ->where('modelo_id', $id)
+                ->where('estado', 'APROBADA')
+                ->whereNull('used_at')
+                ->first();
+
+            if ($solicitud) {
+                $autorizado = true;
+            }
+        }
+
+        if (!$autorizado) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes autorización para editar este registro.'
+            ], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -103,6 +163,11 @@ class HuespedController extends Controller
         }
 
         $huesped->update($request->all());
+
+        // Si se usó una solicitud, marcarla como usada
+        if ($solicitud) {
+            $solicitud->update(['used_at' => now()]);
+        }
 
         return response()->json([
             'success' => true,

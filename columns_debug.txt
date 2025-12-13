@@ -1,0 +1,1 @@
+id, id_reserva, tipo_pago, monto, fecha, estado, motivo_anulacion, fecha_anulacion, created_at, updated_at

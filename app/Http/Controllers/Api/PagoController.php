@@ -13,7 +13,7 @@ class PagoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pago::with(['reserva.huesped', 'reserva.habitacion']);
+        $query = Pago::with(['reserva.huesped', 'reserva.habitaciones']);
 
         // Por defecto solo mostrar pagos activos
         if (!$request->has('incluir_anulados') || !$request->incluir_anulados) {
@@ -91,7 +91,7 @@ class PagoController extends Controller
 
     public function show($id)
     {
-        $pago = Pago::with(['reserva.huesped', 'reserva.habitacion'])->find($id);
+        $pago = Pago::with(['reserva.huesped', 'reserva.habitaciones'])->find($id);
 
         if (!$pago) {
             return response()->json([

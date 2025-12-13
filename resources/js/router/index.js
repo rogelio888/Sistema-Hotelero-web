@@ -93,6 +93,9 @@ const routes = [
       // Auditoría
       { path: 'auditoria', name: 'AuditoriaIndex', component: () => import('../views/auditoria/Index.vue') },
 
+      // Solicitudes de Autorización
+      { path: 'solicitudes', name: 'SolicitudesIndex', component: () => import('../views/solicitudes/Index.vue') },
+
       // Perfil
       { path: 'perfil', name: 'Perfil', component: () => import('../views/profile/Profile.vue') },
     ],

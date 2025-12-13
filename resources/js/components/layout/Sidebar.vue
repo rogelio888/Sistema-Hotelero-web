@@ -163,6 +163,12 @@ const menuItems = computed(() => {
         label: 'Auditoría',
         icon: '📜',
         route: '/auditoria',
+      },
+      {
+        name: 'solicitudes',
+        label: 'Solicitudes',
+        icon: '🔐',
+        route: '/solicitudes',
       }
     );
   }
