@@ -51,6 +51,23 @@ Route::get('/test', function () {
     ]);
 });
 
+// Ruta temporal para correr migraciones en producción
+Route::get('/migrar-db', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Migraciones ejecutadas correctamente',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al ejecutar migraciones: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
 // Autenticación - Login
 Route::post('/auth/login', [AuthController::class, 'login']);
 
