@@ -15,32 +15,34 @@ class SolicitudAutorizacionController extends Controller
     public function index(Request $request)
     {
         try {
-            $user = $request->user();
+            // DEBUG MODE: Bypassing logic to test connectivity
+            // $user = $request->user();
 
-            // Cargar relación si no está cargada
-            if (!$user->relationLoaded('rol')) {
-                $user->load('rol');
-            }
+            // // Cargar relación si no está cargada
+            // if (!$user->relationLoaded('rol')) {
+            //     $user->load('rol');
+            // }
 
-            $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
+            // $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
 
-            // Verificar si existe el rol antes de acceder a la propiedad nombre
-            if ($user->rol && $user->rol->nombre === 'Recepcionista') {
-                $query->where('solicitante_id', $user->id);
-            }
-            // Gerente/Admin ven todas las pendientes
-            else {
-                $query->where('estado', 'PENDIENTE');
-            }
+            // // Verificar si existe el rol antes de acceder a la propiedad nombre
+            // if ($user->rol && $user->rol->nombre === 'Recepcionista') {
+            //     $query->where('solicitante_id', $user->id);
+            // }
+            // // Gerente/Admin ven todas las pendientes
+            // else {
+            //     $query->where('estado', 'PENDIENTE');
+            // }
 
-            $solicitudes = $query->orderBy('created_at', 'desc')->get();
+            // $solicitudes = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $solicitudes
+                'message' => 'DEBUG: Controller reached successfully. The backend is alive.',
+                'data' => []
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error en SolicitudAutorizacionController@index: ' . $e->getMessage());
+            // simplified error handling without log for now to avoid specific log-permission errors
             return response()->json([
                 'success' => false,
                 'message' => 'Error del servidor: ' . $e->getMessage(),
