@@ -18,7 +18,15 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        $user = $request->user();
         $idHotel = $request->input('id_hotel');
+
+        // Seguridad: Si no es Admin/Gerente, solo ve su propio hotel
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $idHotel = $user->id_hotel;
+            // Actualizamos request para coherencia interna si se pasa a otros métodos
+            $request->merge(['id_hotel' => $idHotel]);
+        }
 
         // Filtrar por hotel si se especifica
         $habitacionesQuery = Habitacion::query();
@@ -134,6 +142,11 @@ class DashboardController extends Controller
      */
     public function ingresosMensuales(Request $request)
     {
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $anio = $request->input('anio', Carbon::now()->year);
         $idHotel = $request->input('id_hotel');
 
@@ -167,6 +180,12 @@ class DashboardController extends Controller
      */
     public function reservasProximas(Request $request)
     {
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+            // Aseguramos que el input local también se actualice si usamos request->input después
+        }
+
         $idHotel = $request->input('id_hotel');
         $dias = $request->input('dias', 7);
 
@@ -194,6 +213,11 @@ class DashboardController extends Controller
      */
     public function habitacionesPorEstado(Request $request)
     {
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $idHotel = $request->input('id_hotel');
 
         $query = Habitacion::select('estado', \DB::raw('count(*) as total'))
@@ -216,6 +240,11 @@ class DashboardController extends Controller
      */
     public function topServicios(Request $request)
     {
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $idHotel = $request->input('id_hotel');
         $limite = $request->input('limite', 10);
 

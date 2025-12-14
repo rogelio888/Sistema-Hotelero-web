@@ -13,6 +13,12 @@ class EmpleadoController extends Controller
 {
     public function index(Request $request)
     {
+        // Seguridad: Scoping por hotel
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $query = Empleado::with(['rol', 'hotel']);
 
         if ($request->filled('id_hotel')) {
@@ -162,8 +168,8 @@ class EmpleadoController extends Controller
             'success' => true,
             'data' => [
                 'empleado' => $empleado->getNombreCompleto(),
-                'rol' => $empleado->rol->nombre,
-                'permisos' => $empleado->rol->permisos
+                'rol' => $empleado->rol ? $empleado->rol->nombre : 'Sin Rol',
+                'permisos' => $empleado->rol ? $empleado->rol->permisos : []
             ]
         ]);
     }

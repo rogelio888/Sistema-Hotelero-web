@@ -17,6 +17,12 @@ class ReporteController extends Controller
      */
     public function reservas(Request $request)
     {
+        // Seguridad: Scoping por hotel para no admins
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $query = Reserva::with(['huesped', 'hotel', 'habitaciones']);
 
         // Filtros
@@ -56,6 +62,12 @@ class ReporteController extends Controller
      */
     public function ingresos(Request $request)
     {
+        // Seguridad
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $query = Pago::with(['reserva.hotel']);
 
         if ($request->filled('id_hotel')) {
@@ -97,6 +109,12 @@ class ReporteController extends Controller
      */
     public function ocupacion(Request $request)
     {
+        // Seguridad
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $query = Habitacion::query();
 
         if ($request->filled('id_hotel')) {
@@ -135,6 +153,12 @@ class ReporteController extends Controller
      */
     public function consumos(Request $request)
     {
+        // Seguridad
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $query = Consumo::with(['servicio', 'reserva.hotel']);
 
         if ($request->filled('id_hotel')) {
@@ -169,6 +193,12 @@ class ReporteController extends Controller
      */
     public function consolidado(Request $request)
     {
+        // Seguridad
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $fechaInicio = $request->input('fecha_inicio', Carbon::now()->startOfMonth());
         $fechaFin = $request->input('fecha_fin', Carbon::now()->endOfMonth());
         $idHotel = $request->input('id_hotel');

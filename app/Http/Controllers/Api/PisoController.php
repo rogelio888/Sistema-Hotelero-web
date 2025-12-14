@@ -12,6 +12,12 @@ class PisoController extends Controller
 {
     public function index(Request $request)
     {
+        // Seguridad: Scoping por hotel
+        $user = $request->user();
+        if ($user->rol && !in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
+            $request->merge(['id_hotel' => $user->id_hotel]);
+        }
+
         $query = Piso::with(['hotel', 'habitaciones']);
 
         if ($request->filled('id_hotel')) {
