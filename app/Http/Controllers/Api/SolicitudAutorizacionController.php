@@ -14,29 +14,40 @@ class SolicitudAutorizacionController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-        // Cargar relación si no está cargada
-        if (!$user->relationLoaded('rol')) {
-            $user->load('rol');
+        try {
+            $user = $request->user();
+
+            // Cargar relación si no está cargada
+            if (!$user->relationLoaded('rol')) {
+                $user->load('rol');
+            }
+
+            $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
+
+            // Verificar si existe el rol antes de acceder a la propiedad nombre
+            if ($user->rol && $user->rol->nombre === 'Recepcionista') {
+                $query->where('solicitante_id', $user->id);
+            }
+            // Gerente/Admin ven todas las pendientes
+            else {
+                $query->where('estado', 'PENDIENTE');
+            }
+
+            $solicitudes = $query->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $solicitudes
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error en SolicitudAutorizacionController@index: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error del servidor: ' . $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
         }
-
-        $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
-
-        // Verificar si existe el rol antes de acceder a la propiedad nombre
-        if ($user->rol && $user->rol->nombre === 'Recepcionista') {
-            $query->where('solicitante_id', $user->id);
-        }
-        // Gerente/Admin ven todas las pendientes
-        else {
-            $query->where('estado', 'PENDIENTE');
-        }
-
-        $solicitudes = $query->orderBy('created_at', 'desc')->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $solicitudes
-        ]);
     }
 
     /**
