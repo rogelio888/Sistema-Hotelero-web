@@ -15,10 +15,15 @@ class SolicitudAutorizacionController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        // Cargar relación si no está cargada
+        if (!$user->relationLoaded('rol')) {
+            $user->load('rol');
+        }
+
         $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
 
-        // Recepcionista solo ve sus propias solicitudes
-        if ($user->rol->nombre === 'Recepcionista') {
+        // Verificar si existe el rol antes de acceder a la propiedad nombre
+        if ($user->rol && $user->rol->nombre === 'Recepcionista') {
             $query->where('solicitante_id', $user->id);
         }
         // Gerente/Admin ven todas las pendientes
