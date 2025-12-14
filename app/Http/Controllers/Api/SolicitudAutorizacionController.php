@@ -24,13 +24,14 @@ class SolicitudAutorizacionController extends Controller
 
             $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
 
-            // Verificar si existe el rol antes de acceder a la propiedad nombre
-            if ($user->rol && $user->rol->nombre === 'Recepcionista') {
-                $query->where('solicitante_id', $user->id);
-            }
-            // Gerente/Admin ven todas las pendientes
-            else {
+            // Verificar permisos de visualización (Seguridad mejorada)
+            // Solo Administradores y Gerentes pueden ver todas las solicitudes pendientes
+            if ($user->rol && in_array($user->rol->nombre, ['Administrador', 'Gerente'])) {
                 $query->where('estado', 'PENDIENTE');
+            }
+            // El resto (Recepcionista, sin rol, etc.) solo ve sus propias solicitudes
+            else {
+                $query->where('solicitante_id', $user->id);
             }
 
             $solicitudes = $query->orderBy('created_at', 'desc')->get();
