@@ -15,37 +15,51 @@ class SolicitudAutorizacionController extends Controller
     public function index(Request $request)
     {
         try {
-            // DEBUG MODE: Bypassing logic to test connectivity
-            // $user = $request->user();
+            $user = $request->user();
 
-            // // Cargar relación si no está cargada
-            // if (!$user->relationLoaded('rol')) {
-            //     $user->load('rol');
-            // }
+            // Paso 1: Verificar Rol
+            $mensajeRol = "Rol no cargado";
+            if (!$user->relationLoaded('rol')) {
+                $user->load('rol');
+            }
+            $nombreRol = $user->rol ? $user->rol->nombre : 'Sin Rol asignado';
 
-            // $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
+            // Paso 2: Verificar Tabla de Solicitudes (Conteo simple)
+            $cantidadSolicitudes = -1;
+            try {
+                $cantidadSolicitudes = SolicitudAutorizacion::count();
+            } catch (\Exception $ex) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al acceder a la tabla solicitudes_autorizacion. Posiblemente falta la migración.',
+                    'error_detail' => $ex->getMessage()
+                ], 500);
+            }
 
-            // // Verificar si existe el rol antes de acceder a la propiedad nombre
-            // if ($user->rol && $user->rol->nombre === 'Recepcionista') {
-            //     $query->where('solicitante_id', $user->id);
-            // }
-            // // Gerente/Admin ven todas las pendientes
-            // else {
-            //     $query->where('estado', 'PENDIENTE');
-            // }
+            // Si llegamos aquí, la tabla existe. Intentemos la consulta real pero limitada.
+            $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
 
-            // $solicitudes = $query->orderBy('created_at', 'desc')->get();
+            if ($user->rol && $user->rol->nombre === 'Recepcionista') {
+                $query->where('solicitante_id', $user->id);
+            } else {
+                $query->where('estado', 'PENDIENTE');
+            }
+
+            $solicitudes = $query->orderBy('created_at', 'desc')->take(5)->get();
 
             return response()->json([
                 'success' => true,
-                'message' => 'DEBUG: Controller reached successfully. The backend is alive.',
-                'data' => []
+                'debug_info' => [
+                    'user_id' => $user->id,
+                    'rol' => $nombreRol,
+                    'table_count' => $cantidadSolicitudes
+                ],
+                'data' => $solicitudes
             ]);
         } catch (\Exception $e) {
-            // simplified error handling without log for now to avoid specific log-permission errors
             return response()->json([
                 'success' => false,
-                'message' => 'Error del servidor: ' . $e->getMessage(),
+                'message' => 'Error General en Index: ' . $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ], 500);
