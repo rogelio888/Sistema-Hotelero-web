@@ -17,49 +17,32 @@ class SolicitudAutorizacionController extends Controller
         try {
             $user = $request->user();
 
-            // Paso 1: Verificar Rol
-            $mensajeRol = "Rol no cargado";
+            // Cargar relación si no está cargada
             if (!$user->relationLoaded('rol')) {
                 $user->load('rol');
             }
-            $nombreRol = $user->rol ? $user->rol->nombre : 'Sin Rol asignado';
 
-            // Paso 2: Verificar Tabla de Solicitudes (Conteo simple)
-            $cantidadSolicitudes = -1;
-            try {
-                $cantidadSolicitudes = SolicitudAutorizacion::count();
-            } catch (\Exception $ex) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al acceder a la tabla solicitudes_autorizacion. Posiblemente falta la migración.',
-                    'error_detail' => $ex->getMessage()
-                ], 500);
-            }
-
-            // Si llegamos aquí, la tabla existe. Intentemos la consulta real pero limitada.
             $query = SolicitudAutorizacion::with(['solicitante', 'autorizador']);
 
+            // Verificar si existe el rol antes de acceder a la propiedad nombre
             if ($user->rol && $user->rol->nombre === 'Recepcionista') {
                 $query->where('solicitante_id', $user->id);
-            } else {
+            }
+            // Gerente/Admin ven todas las pendientes
+            else {
                 $query->where('estado', 'PENDIENTE');
             }
 
-            $solicitudes = $query->orderBy('created_at', 'desc')->take(5)->get();
+            $solicitudes = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
                 'success' => true,
-                'debug_info' => [
-                    'user_id' => $user->id,
-                    'rol' => $nombreRol,
-                    'table_count' => $cantidadSolicitudes
-                ],
                 'data' => $solicitudes
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error General en Index: ' . $e->getMessage(),
+                'message' => 'Error del servidor: ' . $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ], 500);
