@@ -54,16 +54,39 @@ Route::get('/test', function () {
 // Ruta temporal para correr migraciones en producción
 Route::get('/migrar-db', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return response()->json([
-            'success' => true,
-            'message' => 'Migraciones ejecutadas correctamente',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
-        ]);
+        if (!\Illuminate\Support\Facades\Schema::hasTable('solicitudes_autorizacion')) {
+            \Illuminate\Support\Facades\Schema::create('solicitudes_autorizacion', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->id();
+                $table->foreignId('solicitante_id')->constrained('empleados')->onDelete('cascade');
+                $table->foreignId('autorizador_id')->nullable()->constrained('empleados')->onDelete('set null');
+                $table->string('tipo'); // 'editar_huesped', 'editar_habitacion', etc.
+                $table->string('modelo'); // 'App\Models\Huesped'
+                $table->unsignedBigInteger('modelo_id'); // ID del registro a editar
+                $table->text('motivo')->nullable(); // Por qué necesita editar
+                $table->json('datos_nuevos')->nullable(); // Datos que quiere cambiar
+                $table->enum('estado', ['PENDIENTE', 'APROBADA', 'RECHAZADA'])->default('PENDIENTE');
+                $table->text('comentario_autorizador')->nullable();
+                $table->timestamp('fecha_respuesta')->nullable();
+                $table->timestamps();
+
+                $table->index(['estado', 'solicitante_id']);
+                $table->index(['modelo', 'modelo_id']);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tabla solicitudes_autorizacion creada MANUALMENTE con éxito.'
+            ]);
+        } else {
+            return response()->json([
+                'success' => true,
+                'message' => 'La tabla solicitudes_autorizacion YA EXISTÍA.'
+            ]);
+        }
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'Error al ejecutar migraciones: ' . $e->getMessage()
+            'message' => 'Error al crear tabla manual: ' . $e->getMessage()
         ], 500);
     }
 });
